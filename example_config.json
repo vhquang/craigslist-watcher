@@ -1,0 +1,5 @@
+{
+    "device_token": "FAKE_DEVICE_TOKEN",
+    "gcm_api_key": "FAKE_API_KEYR",
+    "gcm_sender_id": "FAKE_ID"
+}
