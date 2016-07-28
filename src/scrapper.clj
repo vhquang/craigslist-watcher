@@ -47,5 +47,8 @@
                          (get item :link)
                          (get-description)
                          (assoc item :description))))
-
+    ((fn [item-list]
+       (zipmap (map #(keyword (get % :id)) item-list)
+               item-list)
+       ))
     ))
