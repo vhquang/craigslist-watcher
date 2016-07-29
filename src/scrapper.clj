@@ -2,13 +2,13 @@
   (:require [net.cgrand.enlive-html :as html])
   (:require  [clojurewerkz.urly.core :as urly]))
 
-(def ^:dynamic *cl-url* "https://losangeles.craigslist.org/search/sss?query=macbook+retina&sort=date&min_price=700&max_price=700")
+(def ^:dynamic *cl-url* "https://losangeles.craigslist.org/search/sss?query=*&sort=date&min_price=700&max_price=700")
 
 (defn fetch-url [url]
   (html/html-resource (java.net.URL. url)))
 
-(defn get-row-items []
-  (html/select (fetch-url *cl-url*)
+(defn get-row-items [url]
+  (html/select (fetch-url url)
                [:.row]))
 
 (defn get-attr-values [nodes attr-key]
@@ -40,15 +40,17 @@
   (let [page (fetch-url url)]
     (html/text (first (html/select page [:#postingbody])))))
 
-(defn run []
-  (->>
-    (map transform-row-node (get-row-items))
-    (map (fn [item] (->> item
-                         (get item :link)
-                         (get-description)
-                         (assoc item :description))))
-    ((fn [item-list]
-       (zipmap (map #(keyword (get % :id)) item-list)
-               item-list)
-       ))
+(defn run [url]
+  (binding [*cl-url* url]
+    (->>
+      (map transform-row-node (get-row-items url))
+      (map (fn [item] (->> item
+                           (get item :link)
+                           (get-description)
+                           (assoc item :description))))
+      ((fn [item-list]
+         (zipmap (map #(keyword (get % :id)) item-list)
+                 item-list)
+         ))
+      )
     ))
