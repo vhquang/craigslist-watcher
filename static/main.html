@@ -31,8 +31,16 @@
         style="font-size: xx-large; color: lightblue"></span>
 </div>
 
+<div class="" style="margin-bottom: 20px">
+  <div class="input-group input-group-lg">
+    <input type="text" class="form-control" ng-model="descriptionFilter"
+           placeholder="description filter" aria-describedby="description filter">
+  </div>
+</div>
+
 <li ng-repeat="item in itemList">
-  <div class="contain well" style="background-color: #fefefe">
+  <div class="contain well" style="background-color: #fefefe"
+       ng-class="{'match-item': matchDescription(item.description, descriptionFilter)}">
     <h4>
       <a target="_blank" href="{{item.link}}">
         <span style="margin-right: 10px;">{{item.title}}</span>

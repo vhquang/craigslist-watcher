@@ -59,5 +59,19 @@ angular.module('yeomanApp')
       ).finally(
         function() { $scope.isLoading = false; }
       );
-    }
+    };
+
+    $scope.matchDescription = function(description, query) {
+      var words = new Set( (description || "").toLowerCase().split(/\s/) ),
+        search = new Set( (query || "").toLowerCase().split(/\s/) );
+      words.delete("");
+      search.delete("");
+      if (search.size === 0 || words.size === 0) {
+        return false;
+      }
+      for (var s of search) {
+        if ( !(words.has(s)) ) { return false;}
+      }
+      return true;
+    };
   });
