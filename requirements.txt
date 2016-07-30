@@ -3,3 +3,4 @@ hiredis==0.2.0
 python-dateutil==2.4.2
 python-gcm==0.4
 redis==2.9.1
+validators==0.10.3
