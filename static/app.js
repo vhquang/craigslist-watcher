@@ -74,4 +74,25 @@ angular.module('yeomanApp')
       }
       return true;
     };
+
+    (function($window, element) {
+      var initialTopPosition, initialWidth;
+      setTimeout(function() {
+        // without an immediate timeout, the offset.top is set as bottom
+        // instead of top of the element
+        initialTopPosition = $(".pinned").position().top;
+        initialWidth = element.width();
+      }, 0);
+      $window.on('scroll', function() {
+        var top = $window.scrollTop();
+        console.log(element.offset().top, top);
+        if (initialTopPosition < top) {
+          element.addClass("pinned-active");
+          element.css("width", initialWidth);
+        } else {
+          element.css("width", "");
+          element.removeClass("pinned-active");
+        }
+      });
+    })( $(window), $(".pinned") );
   });
