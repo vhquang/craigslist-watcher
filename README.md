@@ -3,19 +3,19 @@ This project scrape Craigslist base on a given query, then use an intermediate d
 
 ## Requirements
 - Redis
-- PhantomJS
 - Python
+- Clojure
 
 ## Installation
 ```
 pip install -r requirements.txt
 ```
-
+Refer to [Leiningen](http://leiningen.org/) website for install `lein`
 
 ## Run
 For scrapping your query. Run:
 ```
-python pricewatch.py
+lein ring server-headless
 ```
 Then run a web server:
 ```
