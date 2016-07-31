@@ -62,15 +62,14 @@ angular.module('yeomanApp')
     };
 
     $scope.matchDescription = function(description, query) {
-      var words = new Set( (description || "").toLowerCase().split(/\s/) ),
+      var words = (description || "").toLowerCase(),
         search = new Set( (query || "").toLowerCase().split(/\s/) );
-      words.delete("");
       search.delete("");
-      if (search.size === 0 || words.size === 0) {
+      if (search.size === 0 || words.length === 0) {
         return false;
       }
       for (var s of search) {
-        if ( !(words.has(s)) ) { return false;}
+        if ( words.indexOf(s) < 0 ) { return false; }
       }
       return true;
     };
@@ -85,7 +84,6 @@ angular.module('yeomanApp')
       }, 0);
       $window.on('scroll', function() {
         var top = $window.scrollTop();
-        console.log(element.offset().top, top);
         if (initialTopPosition < top) {
           element.addClass("pinned-active");
           element.css("width", initialWidth);
