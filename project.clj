@@ -1,6 +1,7 @@
 (defproject watcher "0.1.0"
   :description "Parse the result page from Craigslist"
   :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/tools.logging "0.3.1"]
                  [enlive "1.1.1"]
                  [clojurewerkz/urly "1.0.0"]
                  [compojure "1.5.1"]

@@ -1,6 +1,7 @@
 (ns scrapper
   (:require [net.cgrand.enlive-html :as html])
-  (:require  [clojurewerkz.urly.core :as urly]))
+  (:require  [clojurewerkz.urly.core :as urly])
+  (:require [clojure.tools.logging :refer [info debug]]))
 
 (def ^:dynamic *cl-url* "https://losangeles.craigslist.org/search/sss?query=*&sort=date&min_price=700&max_price=700")
 
@@ -44,13 +45,15 @@
   (binding [*cl-url* url]
     (->>
       (map transform-row-node (get-row-items url))
-      (map (fn [item] (->> item
-                           (get item :link)
-                           (get-description)
-                           (assoc item :description))))
+      (map (fn [item]
+             (info "ITEM" (get item :title))
+             (->> item
+                  (get item :link)
+                  (get-description)
+                  (assoc item :description))))
       ((fn [item-list]
          (zipmap (map #(keyword (get % :id)) item-list)
                  item-list)
          ))
-      )
-    ))
+    )
+  ))

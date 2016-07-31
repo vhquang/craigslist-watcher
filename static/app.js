@@ -54,7 +54,7 @@ angular.module('yeomanApp')
       $scope.isLoading = true;
       $http.post('/api/scrape-link', {"link": link}).then(
         function(resp) { getItems(); },
-        function (err) { console.error(err); },
+        function (err) { console.error(err); alert('Cannot get items'); },
         function (progress) { console.log(progress); }
       ).finally(
         function() { $scope.isLoading = false; }
