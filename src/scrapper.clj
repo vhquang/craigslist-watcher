@@ -8,9 +8,14 @@
 (defn fetch-url [url]
   (html/html-resource (java.net.URL. url)))
 
-(defn get-row-items [url]
+(defn get-row-items
+  "Grab each craigslist item, that is put inside a `li` tag with class 'result-row',
+  ex:
+  <li class='result-row' data-pid='5928214568' data-repost-of='5378677845'>
+  "
+  [url]
   (html/select (fetch-url url)
-               [:.row]))
+               [:.result-row]))
 
 (defn get-attr-values [nodes attr-key]
   (map #(get-in % [:attrs attr-key])
@@ -25,10 +30,12 @@
       (str (urly/protocol-of u) ":" rel-url)
       (str (urly/protocol-of u) "://" (urly/host-of u) rel-url))))
 ;
-(defn transform-row-node [row]
+(defn transform-row-node
+  "Extract interested info (price, id, repost-id...) from the posted item"
+  [row]
   (hash-map :id (get-in row [:attrs :data-pid])
             :price (clojure.string/replace
-                     (get-first-match-text row [:a :span.price])
+                     (get-first-match-text row [:span.result-price])
                      "$" "")
             :title (get-first-match-text row [:a.hdrlnk])
             :link (to-absolute-url
