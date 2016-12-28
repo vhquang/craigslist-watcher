@@ -51,14 +51,15 @@
 (defn run [url]
   (binding [*cl-url* url]
     (->>
-      (map transform-row-node (get-row-items url))
+      (get-row-items url)
+      (map transform-row-node)
       (map (fn [item]
              (info "ITEM" (get item :title))
-             (->> item
-                  (get item :link)
-                  (get-description)
-                  (#(clojure.string/replace % "QR Code Link to This Post" ""))
-                  (assoc item :description))))
+             (as-> [item] v
+                 (get item :link)
+                 (get-description v)
+                 (clojure.string/replace v "QR Code Link to This Post" "")
+                 (assoc item :description v))))
       ((fn [item-list]
          (zipmap (map #(keyword (get % :id)) item-list)
                  item-list)
