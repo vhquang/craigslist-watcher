@@ -29,14 +29,14 @@
     (if (clojure.string/index-of rel-url "//")              ; is absolute linking
       (str (urly/protocol-of u) ":" rel-url)
       (str (urly/protocol-of u) "://" (urly/host-of u) rel-url))))
-;
+
 (defn transform-row-node
   "Extract interested info (price, id, repost-id...) from the posted item"
   [row]
   (hash-map :id (get-in row [:attrs :data-pid])
-            :price (clojure.string/replace
+            :price (->
                      (get-first-match-text row [:span.result-price])
-                     "$" "")
+                     (clojure.string/replace "$" ""))
             :title (get-first-match-text row [:a.hdrlnk])
             :link (to-absolute-url
                     (first (get-attr-values
@@ -57,6 +57,7 @@
              (->> item
                   (get item :link)
                   (get-description)
+                  (#(clojure.string/replace % "QR Code Link to This Post" ""))
                   (assoc item :description))))
       ((fn [item-list]
          (zipmap (map #(keyword (get % :id)) item-list)
