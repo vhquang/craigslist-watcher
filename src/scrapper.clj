@@ -55,11 +55,12 @@
       (map transform-row-node)
       (map (fn [item]
              (info "ITEM" (get item :title))
-             (as-> [item] v
-                 (get item :link)
-                 (get-description v)
-                 (clojure.string/replace v "QR Code Link to This Post" "")
-                 (assoc item :description v))))
+             (as-> [item] x
+                   (get item :link)
+                   (get-description x)
+                   (clojure.string/replace x "QR Code Link to This Post" "")
+                   (clojure.string/trim x)
+                   (assoc item :description x))))
       ((fn [item-list]
          (zipmap (map #(keyword (get % :id)) item-list)
                  item-list)
