@@ -44,23 +44,46 @@
             :time (first (get-attr-values (html/select row [:time]) :datetime))
             :repost_id (get-in row [:attrs :data-repost-of])))
 
-(defn get-description [url]
+(defn get-posting-detail [url]
   (let [page (fetch-url url)]
     (html/text (first (html/select page [:#postingbody])))))
+
+(defn future-get-detail
+  "Return a future call of getting object detail"
+  [url]
+  (future (get-posting-detail url)))
+
+(defn add-item-detail
+  "Retrieve more description, by GET their item link"
+  [item]
+  (debug "ITEM" (get item :title))
+  (as-> [item] x
+        (get item :link)
+        (get-posting-detail x)
+        (clojure.string/replace x "QR Code Link to This Post" "")
+        (clojure.string/trim x)
+        (assoc item :description x)))
+
+(defn concurrent-add-items-detail
+  "Concurrently request item detail, and add their detail into the item"
+  [items]
+  (->> items
+    (map (fn [item]
+           (assoc item :description (future-get-detail (item :link)))))
+    (map (fn [item]
+           (as-> [item] x
+             (deref (item :description))
+             (clojure.string/replace x "QR Code Link to This Post" "")
+             (clojure.string/trim x)
+             (assoc item :description x))))))
 
 (defn run [url]
   (binding [*cl-url* url]
     (->>
       (get-row-items url)
       (map transform-row-node)
-      (map (fn [item]
-             (info "ITEM" (get item :title))
-             (as-> [item] x
-                   (get item :link)
-                   (get-description x)
-                   (clojure.string/replace x "QR Code Link to This Post" "")
-                   (clojure.string/trim x)
-                   (assoc item :description x))))
+      (map add-item-detail)
+      ;(concurrent-add-items-detail)
       ((fn [item-list]
          (zipmap (map #(keyword (get % :id)) item-list)
                  item-list)
