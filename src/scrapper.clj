@@ -66,10 +66,13 @@
 (defn concurrent-add-items-detail
   "Concurrently request item detail, and add their detail into the item"
   [items]
-  (->> items
+  (->>
+    items
     (map (fn [item]
            (assoc item :description (future-get-detail (item :link)))))
+    (doall)
     (map (fn [item]
+           (info "ITEM" (get item :title))
            (as-> [item] x
              (deref (item :description))
              (clojure.string/replace x "QR Code Link to This Post" "")
@@ -87,7 +90,7 @@
     (->>
       (get-row-items url)
       (map transform-row-node)
-      (map add-item-detail)
-      ;(concurrent-add-items-detail)
+      ;(map add-item-detail)
+      (concurrent-add-items-detail)
       (list-to-hashmap))
     ))
