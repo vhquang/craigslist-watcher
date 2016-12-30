@@ -58,8 +58,7 @@
   [item]
   (debug "ITEM" (get item :title))
   (as-> [item] x
-        (get item :link)
-        (get-posting-detail x)
+        (get-posting-detail (item :link))
         (clojure.string/replace x "QR Code Link to This Post" "")
         (clojure.string/trim x)
         (assoc item :description x)))
@@ -77,6 +76,12 @@
              (clojure.string/trim x)
              (assoc item :description x))))))
 
+(defn list-to-hashmap
+  "Convert [{:id 'a'}] to {:a {:id 'a'}}"
+  [list]
+  (zipmap (map #(keyword (get % :id)) list)
+          list))
+
 (defn run [url]
   (binding [*cl-url* url]
     (->>
@@ -84,9 +89,5 @@
       (map transform-row-node)
       (map add-item-detail)
       ;(concurrent-add-items-detail)
-      ((fn [item-list]
-         (zipmap (map #(keyword (get % :id)) item-list)
-                 item-list)
-         ))
-    )
-  ))
+      (list-to-hashmap))
+    ))
