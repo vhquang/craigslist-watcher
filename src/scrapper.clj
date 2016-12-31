@@ -90,7 +90,7 @@
     (->>
       (get-row-items url)
       (map transform-row-node)
-      ;(map add-item-detail)
-      (concurrent-add-items-detail)
+      (pmap add-item-detail)
+      ;(concurrent-add-items-detail)
       (list-to-hashmap))
     ))
