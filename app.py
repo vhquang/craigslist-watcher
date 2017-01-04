@@ -14,22 +14,26 @@ CLOJURE_APP = 'http://localhost:3000'
 app = Flask(__name__, static_url_path='/static')
 
 
+def get_redis():
+    return redis.StrictRedis(host='localhost', port=6379, db=0)
+
+
 def get_new_items_redis():
-    redis_db = redis.StrictRedis(host='localhost', port=6379, db=0)
+    redis_db = get_redis()
     new_item_keys = redis_db.keys('new:item:*')
     res = [redis_db.hgetall(key) for key in new_item_keys]
     return res
 
 
 def archive_item_redis(item_id):
-    redis_db = redis.StrictRedis(host='localhost', port=6379, db=0)
+    redis_db = get_redis()
     new_item_key = 'new:item:{}'.format(item_id)
     old_item_key = 'old:item:{}'.format(item_id)
     return redis_db.renamenx(new_item_key, old_item_key)
 
 
 def update_database(data):
-    redis_db = redis.StrictRedis(host='localhost', port=6379, db=0)
+    redis_db = get_redis()
     for _id, item in data.iteritems():
         # pprint(item)
         key_old_item = 'old:item:{}'.format(_id)
