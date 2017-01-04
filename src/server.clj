@@ -16,6 +16,7 @@
     (let [link (get-in request [:body :link])]
       {:status 200
       :body (scrapper/run link)}))
+  (GET "/oauth2callback" [] {:status 200 :body {}})
   (route/resources "/")
   (route/not-found "Page not found"))
 
