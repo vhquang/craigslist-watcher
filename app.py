@@ -1,17 +1,28 @@
-from flask import Flask, send_from_directory, jsonify, request
 from pprint import pprint
 import dateutil.parser
 import json
+import os
+import validators
+import urllib
+
+from flask import Flask, send_from_directory, jsonify, request, session, redirect, url_for
 import redis
 import requests
-import validators
 
 
 REDIS_ITEM_EXPIRE_TIME = 3600 * 24 * 7  # seconds
 CLOJURE_APP = 'http://localhost:3000'
 
+# Documentation: https://developers.google.com/identity/protocols/OAuth2WebServer
+# GOOGLE_OAUTH2_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth'
+# GOOGLE_TOKEN_ENDPOINT = 'https://www.googleapis.com/oauth2/v4/token'
+# todo: absolute path
+GOOGLE_CLIENT_INFO = json.load(open('config/client_secret.json', 'r'))
+GOOGLE_USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
+
 
 app = Flask(__name__, static_url_path='/static')
+app.secret_key = os.environ.get('APP_SECRET_KEY') or os.urandom(24)
 
 
 def get_redis():
@@ -43,6 +54,55 @@ def update_database(data):
             redis_db.hmset(key_new_item, item)
             redis_db.expire(key_new_item, REDIS_ITEM_EXPIRE_TIME)
             # gcm_notify(DEVICE_TOKEN, item['title'])
+
+
+def extract_json_data(response):
+    """
+    :params response: requests.response
+    """
+    if response.status_code != 200:
+        raise ValueError(response.text)
+    return json.loads(response.text)
+
+
+def get_google_auth_uri():
+    """
+    Get the URL for Google authentication
+    
+    :rtype: basestring
+    """
+    info = GOOGLE_CLIENT_INFO['web']
+    params = {
+        'scope': 'profile',
+        'redirect_uri':  'http://localhost:5000/oauth2callback',
+        'response_type': 'code',
+        'client_id': info['client_id']
+    }
+    # resp = requests.get(info['auth_uri'], params=params)
+    # return extract_json_data(resp)
+    return info['auth_uri'] + '?' + urllib.urlencode(params)
+
+
+def get_token_access(auth_code):
+    """Exchange OAuth authentication code for access token"""
+    info = GOOGLE_CLIENT_INFO['web']
+    data = {
+        'code': auth_code,
+        'client_id': info['client_id'],
+        'client_secret': info['client_secret'],
+        'redirect_uri': 'http://localhost:5000/oauth2callback',
+        'grant_type': 'authorization_code'
+    }
+    resp = requests.post(info['token_uri'], data=data)
+    return extract_json_data(resp)
+
+
+def get_google_user_info(access_token):
+    headers = {
+        'Authorization': 'Bearer {}'.format(access_token)
+    }
+    resp = requests.get(GOOGLE_USER_INFO, headers=headers)
+    return extract_json_data(resp)
 
 
 @app.route('/')
@@ -92,6 +152,29 @@ def archive(item_id):
     else:
         print 'fail'
         return jsonify({'error': 'cannot archive {}'.format(item_id)}), 500
+
+
+@app.route('/oauth2callback', methods=['GET'])
+def oauth2callback():
+    """The OAuth handler for Google OAuth2"""
+    if 'code' not in request.args:
+        # auth_uri = ('https://accounts.google.com/o/oauth2/v2/auth?response_type=code'
+        #             '&client_id={}&redirect_uri={}&scope={}').format(CLIENT_ID, REDIRECT_URI, SCOPE)
+        auth_uri = get_google_auth_uri()
+        return redirect(auth_uri)
+    else:
+        auth_code = request.args.get('code')
+        # data = {'code': auth_code,
+        #         'client_id': CLIENT_ID,
+        #         'client_secret': CLIENT_SECRET,
+        #         'redirect_uri': REDIRECT_URI,
+        #         'grant_type': 'authorization_code'}
+        # r = requests.post('https://www.googleapis.com/oauth2/v4/token', data=data)
+        # session['credentials'] = r.text
+        credential = get_token_access(auth_code)
+        session['credential'] = credential
+        session['user'] = get_google_user_info(access_token=credential['access_token'])
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True, host ='0.0.0.0')
