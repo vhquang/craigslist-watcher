@@ -1,4 +1,5 @@
 from pprint import pprint
+from functools import wraps
 import dateutil.parser
 import json
 import os
@@ -54,6 +55,20 @@ def update_database(data):
             redis_db.hmset(key_new_item, item)
             redis_db.expire(key_new_item, REDIS_ITEM_EXPIRE_TIME)
             # gcm_notify(DEVICE_TOKEN, item['title'])
+
+
+def oauth_required(fn):
+    """A wrapper for all route handler that expect user's info in the session"""
+    @wraps(fn)
+    def decorator(*args, **kwargs):
+        pprint(session.get('credential'))
+        if 'user' not in session:
+            return redirect(url_for('oauth2callback'))
+        if 'credential' not in session or session['credential']['expires_in'] <= 0:
+            return redirect(url_for('oauth2callback'))
+        pprint(session['user'])
+        fn(*args, **kwargs)
+    return decorator
 
 
 def extract_json_data(response):
@@ -122,6 +137,7 @@ def serve_static(path):
 
 
 @app.route('/api/new-item/')
+@oauth_required
 def get_new_items():
     new_items = sorted(get_new_items_redis(),
                        key=lambda x: dateutil.parser.parse(x['time']),
@@ -130,6 +146,7 @@ def get_new_items():
 
 
 @app.route('/api/scrape-link', methods=['POST'])
+@oauth_required
 def retrieve_items():
     query_link = request.get_json().get('link')
     if not validators.url(query_link):
@@ -142,6 +159,7 @@ def retrieve_items():
 
 
 @app.route('/api/item/<item_id>/archive', methods=['POST'])
+@oauth_required
 def archive(item_id):
     success = archive_item_redis(item_id)
     if success:
