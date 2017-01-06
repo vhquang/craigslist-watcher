@@ -136,8 +136,8 @@ def serve_static(path):
     return send_from_directory('static', path)
 
 
-@app.route('/api/new-item/')
 @oauth_required
+@app.route('/api/new-item/')
 def get_new_items():
     new_items = sorted(get_new_items_redis(),
                        key=lambda x: dateutil.parser.parse(x['time']),
@@ -145,8 +145,8 @@ def get_new_items():
     return jsonify({'items': new_items})
 
 
-@app.route('/api/scrape-link', methods=['POST'])
 @oauth_required
+@app.route('/api/scrape-link', methods=['POST'])
 def retrieve_items():
     query_link = request.get_json().get('link')
     if not validators.url(query_link):
@@ -158,8 +158,8 @@ def retrieve_items():
     return jsonify({}), 204
 
 
-@app.route('/api/item/<item_id>/archive', methods=['POST'])
 @oauth_required
+@app.route('/api/item/<item_id>/archive', methods=['POST'])
 def archive(item_id):
     success = archive_item_redis(item_id)
     if success:
