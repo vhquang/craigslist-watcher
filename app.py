@@ -78,8 +78,6 @@ def get_google_auth_uri():
         'response_type': 'code',
         'client_id': info['client_id']
     }
-    # resp = requests.get(info['auth_uri'], params=params)
-    # return extract_json_data(resp)
     return info['auth_uri'] + '?' + urllib.urlencode(params)
 
 
@@ -158,23 +156,15 @@ def archive(item_id):
 def oauth2callback():
     """The OAuth handler for Google OAuth2"""
     if 'code' not in request.args:
-        # auth_uri = ('https://accounts.google.com/o/oauth2/v2/auth?response_type=code'
-        #             '&client_id={}&redirect_uri={}&scope={}').format(CLIENT_ID, REDIRECT_URI, SCOPE)
         auth_uri = get_google_auth_uri()
         return redirect(auth_uri)
     else:
         auth_code = request.args.get('code')
-        # data = {'code': auth_code,
-        #         'client_id': CLIENT_ID,
-        #         'client_secret': CLIENT_SECRET,
-        #         'redirect_uri': REDIRECT_URI,
-        #         'grant_type': 'authorization_code'}
-        # r = requests.post('https://www.googleapis.com/oauth2/v4/token', data=data)
-        # session['credentials'] = r.text
         credential = get_token_access(auth_code)
         session['credential'] = credential
         session['user'] = get_google_user_info(access_token=credential['access_token'])
     return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(debug=True, host ='0.0.0.0')
