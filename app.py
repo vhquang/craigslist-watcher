@@ -62,8 +62,7 @@ def oauth_required(fn):
     @wraps(fn)
     def decorator(*args, **kwargs):
         if 'user' not in session:
-            print 'redirect for user'  # todo remove print
-            return redirect(url_for('oauth2callback'))
+            return jsonify({'error': 'UnAuthorized'}), 401
         return fn(*args, **kwargs)
     return decorator
 
@@ -117,7 +116,6 @@ def get_google_user_info(access_token):
 
 @app.route('/')
 def index():
-    return jsonify(session.get('user', {}))
     return app.send_static_file('index.html')
 
 
@@ -127,18 +125,23 @@ def serve_static(path):
 
 
 @app.route('/api/me', methods=['GET'])
-@oauth_required
 def get_user_session_info():
     return jsonify(session.get('user', {}))
 
 
+@app.route('/api/login', methods=['GET', 'POST'])
+def login():
+    return redirect(url_for('oauth2callback'))
+
+
 @app.route('/api/logout', methods=['GET', 'POST'])
 def logout():
+    session.pop('user', None)
     return jsonify({})
 
 
 @app.route('/api/new-item/', methods=['GET'])
-# @oauth_required
+@oauth_required
 def get_new_items():
     new_items = sorted(get_new_items_redis(),
                        key=lambda x: dateutil.parser.parse(x['time']),
@@ -146,8 +149,8 @@ def get_new_items():
     return jsonify({'items': new_items})
 
 
-@oauth_required
 @app.route('/api/scrape-link', methods=['POST'])
+@oauth_required
 def retrieve_items():
     query_link = request.get_json().get('link')
     if not validators.url(query_link):
@@ -159,8 +162,8 @@ def retrieve_items():
     return jsonify({}), 204
 
 
-@oauth_required
 @app.route('/api/item/<item_id>/archive', methods=['POST'])
+@oauth_required
 def archive(item_id):
     success = archive_item_redis(item_id)
     if success:
