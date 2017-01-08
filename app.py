@@ -61,13 +61,10 @@ def oauth_required(fn):
     """A wrapper for all route handler that expect user's info in the session"""
     @wraps(fn)
     def decorator(*args, **kwargs):
-        pprint(session.get('credential'))
         if 'user' not in session:
+            print 'redirect for user'  # todo remove print
             return redirect(url_for('oauth2callback'))
-        if 'credential' not in session or session['credential']['expires_in'] <= 0:
-            return redirect(url_for('oauth2callback'))
-        pprint(session['user'])
-        fn(*args, **kwargs)
+        return fn(*args, **kwargs)
     return decorator
 
 
@@ -120,6 +117,8 @@ def get_google_user_info(access_token):
 
 @app.route('/')
 def index():
+    print session
+    return jsonify(session.get('user', {}))
     return app.send_static_file('index.html')
 
 # @app.route('/test')
@@ -136,8 +135,23 @@ def serve_static(path):
     return send_from_directory('static', path)
 
 
+@app.route('/api/me', methods=['GET'])
 @oauth_required
-@app.route('/api/new-item/')
+def get_user_session_info():
+    print session
+    print session.get('user')
+    return jsonify(session.get('user', {}))
+
+
+@app.route('/api/logout', methods=['GET', 'POST'])
+def logout():
+    session.pop('user', None)
+    print session  # todo remove code
+    return jsonify({})
+
+
+@app.route('/api/new-item/', methods=['GET'])
+# @oauth_required
 def get_new_items():
     new_items = sorted(get_new_items_redis(),
                        key=lambda x: dateutil.parser.parse(x['time']),
@@ -179,10 +193,11 @@ def oauth2callback():
     else:
         auth_code = request.args.get('code')
         credential = get_token_access(auth_code)
-        session['credential'] = credential
-        session['user'] = get_google_user_info(access_token=credential['access_token'])
+        user_info = get_google_user_info(access_token=credential['access_token'])
+        user_attributes_filter = ['id', 'name', 'link']
+        session['user'] = {k: v for k, v in user_info.items() if k in user_attributes_filter}
     return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host ='0.0.0.0')
+    app.run(debug=(os.environ.get('DEBUG') == 'True'), host ='0.0.0.0')
