@@ -117,17 +117,8 @@ def get_google_user_info(access_token):
 
 @app.route('/')
 def index():
-    print session
     return jsonify(session.get('user', {}))
     return app.send_static_file('index.html')
-
-# @app.route('/test')
-# def delay():
-#     page = int(request.args.get('page', 1))
-#     print '----------', page
-#     time.sleep(1)
-#     res = [] if page == 10 else [page]
-#     return json.dumps(res)
 
 
 @app.route('/<path>')
@@ -138,15 +129,11 @@ def serve_static(path):
 @app.route('/api/me', methods=['GET'])
 @oauth_required
 def get_user_session_info():
-    print session
-    print session.get('user')
     return jsonify(session.get('user', {}))
 
 
 @app.route('/api/logout', methods=['GET', 'POST'])
 def logout():
-    session.pop('user', None)
-    print session  # todo remove code
     return jsonify({})
 
 
