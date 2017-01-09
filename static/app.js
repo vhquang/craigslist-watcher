@@ -38,14 +38,33 @@ angular.module('yeomanApp')
       );
     }
 
-    getItems();
+    if ($scope.user) {
+      getItems();
+    }
 
     $scope.login = function() {
-      $scope.user = {"id": "a", "name": "Quang"};
+      var login_error = function (err) {
+        console.error(err); 
+        alert('Cannot login');
+      };
+      $http.get('/api/me').then(
+        function(resp) {
+          var user = resp.data || {};
+          if (!!user['id']) { $scope.user = user; }
+          else { location.href = '/api/login'; }
+        },
+        login_error
+      );
     };
 
     $scope.logout = function() {
-      $scope.user = null;
+      $http.post('/api/logout').then(
+        function() {},
+        function() { console.error('Cannot logout'); }
+      ).finally(function() { 
+        $scope.user = null; 
+        location.reload();
+      });
     };
 
     $scope.archive = function(id) {
