@@ -40,6 +40,14 @@ angular.module('yeomanApp')
 
     getItems();
 
+    $scope.login = function() {
+      $scope.user = {"id": "a", "name": "Quang"};
+    };
+
+    $scope.logout = function() {
+      $scope.user = null;
+    };
+
     $scope.archive = function(id) {
       $http.post('/api/item/'+ id +'/archive').then(
         function(result) {
