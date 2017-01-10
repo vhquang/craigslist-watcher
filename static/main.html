@@ -8,8 +8,8 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" >
       <ul class="nav navbar-nav">
-        <!--&lt;!&ndash;<li class="active"><a href="javascript:;">Main</a></li>&ndash;&gt;-->
-        <!--&lt;!&ndash;<li><a href="#/saved">Saved</a></li>&ndash;&gt;-->
+        <!--<li class="active"><a href="javascript:;">Main</a></li>-->
+        <!--<li><a href="#/saved">Saved</a></li>-->
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li ng-switch="!!user.id">
@@ -21,13 +21,32 @@
   </div><!-- /.container-fluid -->
 </nav>
 
-<div class="" style="margin-bottom: 20px">
-  <div class="input-group input-group-lg">
-    <input type="text" class="form-control" ng-model="targetLink"
+<div class="contain well" style="background-color: #fefefe">
+  <div class="" style="margin-bottom: 10px">
+    <button class="btn btn-primary-outline" style="margin-right: 5px" ng-repeat="item in trackingList">
+      {{item.label}}
+    </button>
+    <button class="btn btn-primary-outline">+</button>
+  </div>
+
+  <div class="input-group" style="margin-bottom: 10px">
+    <span class="input-group-addon">Label</span>
+    <input type="text" class="form-control" ng-model="selectTracking.label"
+           placeholder="Name of the tracking" aria-describedby="Tracking name">
+  </div>
+
+  <div class="input-group" style="margin-bottom: 10px">
+    <span class="input-group-addon">Link</span>
+    <input type="text" class="form-control" ng-model="selectTracking.link"
            placeholder="link to scrape" aria-describedby="scrape-link">
-    <span class="input-group-addon" ng-click="scrapeLink(targetLink)" style="cursor: pointer">
-    Scrape
-  </span>
+    <span class="input-group-addon" ng-click="scrapeLink(selectTracking.link)" style="cursor: pointer">
+      Scrape
+    </span>
+  </div>
+
+  <div class="container-fluid text-center" style="">
+    <button class="btn btn-default" style="margin: 5px">Save</button>
+    <button class="btn btn-default" style="margin: 5px">Delete</button>
   </div>
 </div>
 
@@ -38,7 +57,7 @@
 </div>
 
 <div class="pinned" style="margin-bottom: 20px">
-  <div class="input-group input-group-lg col-md-12">
+  <div class="input-group input-group-lg col-sm-12">
     <input type="text" class="form-control" ng-model="descriptionFilter"
            placeholder="description filter" aria-describedby="description filter">
   </div>

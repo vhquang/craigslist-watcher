@@ -26,6 +26,11 @@ angular
 angular.module('yeomanApp')
   .controller('MainCtrl', function ($scope, $http) {
 
+    $scope.trackingList = [];
+    $scope.selectTracking = {};
+    $scope.itemList = [];
+
+
     function getItems() {
       $http.get('/api/new-item').then(
         function (result) {
@@ -55,16 +60,20 @@ angular.module('yeomanApp')
       );
     }
 
-
-    getUserInfo();
-
-    $scope.$watch('user', function(val) {
-      if ((val != null) && ('id' in val)) {
-        getItems();
-      } else {
-        resetItemsResult();
-      }
-    });
+    $scope.getTracking = function() {
+      $scope.trackingList = [
+        {
+          "id": "id1",
+          "label": "test1",
+          "link": "http://test1"
+        },
+        {
+          "id": "id2",
+          "label": "test2",
+          "link": "http://test2"
+        }
+      ];
+    };
 
     $scope.login = function() {
       location.href = '/api/login';
@@ -112,6 +121,17 @@ angular.module('yeomanApp')
       }
       return true;
     };
+
+    getUserInfo();
+    $scope.getTracking();
+
+    $scope.$watch('user', function(val) {
+      if ((val != null) && ('id' in val)) {
+        getItems();
+      } else {
+        resetItemsResult();
+      }
+    });
 
     (function($window, element) {
       var initialTopPosition, initialWidth;
