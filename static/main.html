@@ -23,10 +23,11 @@
 
 <div class="contain well" style="background-color: #fefefe">
   <div class="" style="margin-bottom: 10px">
-    <button class="btn btn-primary-outline" style="margin-right: 5px" ng-repeat="item in trackingList">
+    <button class="btn btn-primary-outline" style="margin-right: 5px" ng-repeat="item in trackingList"
+            ng-click="selectTrackingItem(item)">
       {{item.label}}
     </button>
-    <button class="btn btn-primary-outline">+</button>
+    <button class="btn btn-primary-outline" ng-click="clearTrackingItem()">+</button>
   </div>
 
   <div class="input-group" style="margin-bottom: 10px">
@@ -39,14 +40,20 @@
     <span class="input-group-addon">Link</span>
     <input type="text" class="form-control" ng-model="selectTracking.link"
            placeholder="link to scrape" aria-describedby="scrape-link">
-    <span class="input-group-addon" ng-click="scrapeLink(selectTracking.link)" style="cursor: pointer">
+    <span class="input-group-addon" ng-click="scrapeLink(selectTracking.link)"
+          style="cursor: pointer">
       Scrape
     </span>
   </div>
 
   <div class="container-fluid text-center" style="">
-    <button class="btn btn-default" style="margin: 5px">Save</button>
-    <button class="btn btn-default" style="margin: 5px">Delete</button>
+    <button class="btn btn-default" style="margin: 5px"
+            ng-disabled="!selectTracking.label || !selectTracking.link"
+            ng-click="saveTracking(selectTracking)">Save
+    </button>
+    <button class="btn btn-default" style="margin: 5px"
+            ng-disabled="!selectTracking.id" ng-click="deleteTracking(selectTracking.id)">Delete
+    </button>
   </div>
 </div>
 

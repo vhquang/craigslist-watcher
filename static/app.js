@@ -60,20 +60,65 @@ angular.module('yeomanApp')
       );
     }
 
-    $scope.getTracking = function() {
-      $scope.trackingList = [
-        {
-          "id": "id1",
-          "label": "test1",
-          "link": "http://test1"
-        },
-        {
-          "id": "id2",
-          "label": "test2",
-          "link": "http://test2"
+    $scope.getTrackingList = function() {
+      // $scope.trackingList = [
+      //   {
+      //     "id": "id1",
+      //     "label": "test1",
+      //     "link": "http://test1"
+      //   },
+      //   {
+      //     "id": "id2",
+      //     "label": "test2",
+      //     "link": "http://test2"
+      //   }
+      // ];
+      $http.get('/api/tracking').then(
+        function(resp) {
+          $scope.trackingList = resp.data || [];
         }
-      ];
+      );
     };
+
+    $scope.saveTracking = function(tracking) {
+      function _updateTrackingList(tracking) {
+        var id = tracking['id'];
+        for (var i = 0; i < $scope.trackingList.length; i++) {
+          if ($scope.trackingList[i]['id'] === id) {
+            $scope.trackingList[i] = tracking;
+          } else if (i === $scope.trackingList.length - 1) {
+            $scope.trackingList.push(tracking);
+          }
+        }
+      }
+
+      var id = tracking['id'] || '';
+      $http.post('/api/tracking/' + id, tracking).then(
+        function(resp) { _updateTrackingList(resp.data); },
+        function(err) { console.error(err); }
+      );
+    };
+
+    $scope.deleteTracking = function(id) {
+      function _removeTracking(id) {
+        for (var i = 0; i < $scope.trackingList.length; i++) {
+          if ($scope.trackingList[i]['id'] === id) {
+            $scope.trackingList.splice(i, 1);
+          }
+        }
+      }
+
+      $http.delete('/api/tracking/' + id).then(
+        function() { _removeTracking(id); },
+        function(err) { console.error(err); alert('Cannot delete tracking link'); }
+      );
+    };
+
+    $scope.selectTrackingItem = function(item) {
+      $scope.selectTracking = item;
+    };
+
+    $scope.clearTrackingItem = function() {$scope.selectTracking = {}; }
 
     $scope.login = function() {
       location.href = '/api/login';
@@ -123,7 +168,7 @@ angular.module('yeomanApp')
     };
 
     getUserInfo();
-    $scope.getTracking();
+    $scope.getTrackingList();
 
     $scope.$watch('user', function(val) {
       if ((val != null) && ('id' in val)) {
