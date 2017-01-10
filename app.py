@@ -85,7 +85,7 @@ def get_google_auth_uri():
     info = GOOGLE_CLIENT_INFO['web']
     params = {
         'scope': 'profile',
-        'redirect_uri':  'http://localhost:5000/oauth2callback',
+        'redirect_uri':  info['redirect_uris'][0],
         'response_type': 'code',
         'client_id': info['client_id']
     }
@@ -99,7 +99,7 @@ def get_token_access(auth_code):
         'code': auth_code,
         'client_id': info['client_id'],
         'client_secret': info['client_secret'],
-        'redirect_uri': 'http://localhost:5000/oauth2callback',
+        'redirect_uri': info['redirect_uris'][0],
         'grant_type': 'authorization_code'
     }
     resp = requests.post(info['token_uri'], data=data)
