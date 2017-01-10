@@ -194,4 +194,6 @@ def oauth2callback():
 
 
 if __name__ == '__main__':
-    app.run(debug=(os.environ.get('DEBUG') == 'True'), host ='0.0.0.0')
+    watch_files = ['static/app.js', 'static/main.html']
+    app.run(debug=(os.environ.get('DEBUG') == 'True'), host='0.0.0.0',
+            extra_files=watch_files)
