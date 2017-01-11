@@ -4,6 +4,7 @@
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
+            [ring.adapter.jetty :refer [run-jetty]]
             [scrapper]))
 
 (def test-link "https://losangeles.craigslist.org/search/sss?query=*&sort=date&min_price=700&max_price=700")
@@ -25,4 +26,4 @@
       (wrap-json-body {:keywords? true})
       (wrap-json-response)))
 
-(defn -main [& args] (println "hello world"))
+(defn -main [& args] (run-jetty app {:port 8080}))
