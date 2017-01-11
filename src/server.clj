@@ -1,4 +1,5 @@
 (ns server
+  (:gen-class)
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
@@ -23,3 +24,5 @@
   (-> (wrap-defaults app-routes site-defaults)
       (wrap-json-body {:keywords? true})
       (wrap-json-response)))
+
+(defn -main [& args] (println "hello world"))
