@@ -26,6 +26,11 @@ angular
 angular.module('yeomanApp')
   .controller('MainCtrl', function ($scope, $http) {
 
+    $scope.trackingList = [];
+    $scope.selectTracking = {};
+    $scope.itemList = [];
+
+
     function getItems() {
       $http.get('/api/new-item').then(
         function (result) {
@@ -55,16 +60,58 @@ angular.module('yeomanApp')
       );
     }
 
+    $scope.getTrackingList = function() {
+      $http.get('/api/tracking').then(
+        function(resp) {
+          $scope.trackingList = resp.data.items || [];
+        }
+      );
+    };
 
-    getUserInfo();
-
-    $scope.$watch('user', function(val) {
-      if ((val != null) && ('id' in val)) {
-        getItems();
-      } else {
-        resetItemsResult();
+    $scope.saveTracking = function(tracking) {
+      function _updateTrackingList(tracking) {
+        var id = tracking['id'];
+        for (var i = 0; i <= $scope.trackingList.length; i++) {
+          if (i === $scope.trackingList.length) {
+            $scope.trackingList.push(tracking);
+            break;
+          }
+          if ($scope.trackingList[i]['id'] === id) {
+            $scope.trackingList[i] = tracking;
+            break;
+          }
+        }
+        $scope.selectTracking = tracking;
       }
-    });
+
+      var id = tracking['id'] || '';
+      $http.post('/api/tracking/' + id, tracking).then(
+        function(resp) { _updateTrackingList(resp.data); },
+        function(err) { console.error(err); }
+      );
+    };
+
+    $scope.deleteTracking = function(id) {
+      function _removeTracking(id) {
+        for (var i = 0; i < $scope.trackingList.length; i++) {
+          if ($scope.trackingList[i]['id'] === id) {
+            $scope.trackingList.splice(i, 1);
+          }
+        }
+        $scope.clearTrackingItem();
+      }
+
+      $http.delete('/api/tracking/' + id).then(
+        function() { _removeTracking(id); },
+        function(err) { console.error(err); alert('Cannot delete tracking link'); }
+      );
+    };
+
+    $scope.selectTrackingItem = function(item) {
+      $scope.selectTracking = item;
+    };
+
+    $scope.clearTrackingItem = function() {$scope.selectTracking = {}; }
 
     $scope.login = function() {
       location.href = '/api/login';
@@ -107,11 +154,22 @@ angular.module('yeomanApp')
       if (search.size === 0 || words.length === 0) {
         return false;
       }
-      for (var s of search) {
+      for (var i = 0, s = null; s = search[i]; i++) {
         if ( words.indexOf(s) < 0 ) { return false; }
       }
       return true;
     };
+
+    getUserInfo();
+    $scope.getTrackingList();
+
+    $scope.$watch('user', function(val) {
+      if ((val != null) && ('id' in val)) {
+        getItems();
+      } else {
+        resetItemsResult();
+      }
+    });
 
     (function($window, element) {
       var initialTopPosition, initialWidth;

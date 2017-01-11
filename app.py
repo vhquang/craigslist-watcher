@@ -1,8 +1,10 @@
 from pprint import pprint
 from functools import wraps
+from string import ascii_lowercase, digits
 import dateutil.parser
 import json
 import os
+import random
 import validators
 import urllib
 
@@ -21,6 +23,8 @@ CLOJURE_APP = 'http://localhost:3000'
 GOOGLE_CLIENT_INFO = json.load(open('config/client_secret.json', 'r'))
 GOOGLE_USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
 
+TRACKING_ID_LENGTH = 8
+
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = os.environ.get('APP_SECRET_KEY') or os.urandom(24)
@@ -30,8 +34,44 @@ def get_redis():
     return redis.StrictRedis(host='localhost', port=6379, db=0)
 
 
-def get_redis():
-    return redis.StrictRedis(host='localhost', port=6379, db=0)
+def get_random_id():
+    return ''.join(random.choice(ascii_lowercase + digits)
+                   for _ in range(TRACKING_ID_LENGTH))
+
+
+def get_tracking_items(user_id):
+    """
+
+    :param basestring user_id:
+    :rtype: list
+    """
+    redis_db = get_redis()
+    item_keys = redis_db.keys('user:{}:tracking:*'.format(user_id))
+    res = [redis_db.hgetall(key) for key in item_keys]
+    return res
+
+
+def save_tracking_item(user_id, tracking):
+    """
+
+    :param basestring user_id:
+    :param dict tracking:
+    """
+    redis_db = get_redis()
+    _id = tracking['id']
+    key = 'user:{}:tracking:{}'.format(user_id, _id)
+    redis_db.hmset(key, tracking)
+
+
+def delete_tracking_item(user_id, tracking_id):
+    """
+
+    :param basestring user_id:
+    :param basestring tracking_id:
+    """
+    redis_db = get_redis()
+    key = 'user:{}:tracking:{}'.format(user_id, tracking_id)
+    redis_db.delete(key)
 
 
 def get_new_items_redis():
@@ -142,6 +182,34 @@ def login():
 def logout():
     session.pop('user', None)
     return jsonify({})
+
+
+@app.route('/api/tracking', methods=['GET'])
+@oauth_required
+def get_user_tracking_items():
+    user_id = session['user']['id']
+    items = get_tracking_items(user_id)
+    return jsonify({'items': items})
+
+
+@app.route('/api/tracking/', methods=['POST'])
+@app.route('/api/tracking/<tracking_id>', methods=['POST'])
+@oauth_required
+def save_user_tracking_item(tracking_id=None):
+    user_id = session['user']['id']
+    tracking_id = tracking_id or get_random_id()
+    data = request.get_json()
+    data['id'] = tracking_id
+    save_tracking_item(user_id, data)
+    return jsonify(data)
+
+
+@app.route('/api/tracking/<tracking_id>', methods=['DELETE'])
+@oauth_required
+def delete_user_tracking_item(tracking_id):
+    user_id = session['user']['id']
+    delete_tracking_item(user_id, tracking_id)
+    return jsonify({}), 204
 
 
 @app.route('/api/new-item/', methods=['GET'])
