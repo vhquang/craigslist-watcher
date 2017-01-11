@@ -26,4 +26,6 @@
       (wrap-json-body {:keywords? true})
       (wrap-json-response)))
 
-(defn -main [& args] (run-jetty app {:port 8080}))
+(defn -main [& args]
+  (let [port (get (System/getenv) "APP_PORT" "8080")]
+    (run-jetty app {:port (Integer/parseInt port)})))
