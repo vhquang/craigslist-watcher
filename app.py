@@ -74,26 +74,26 @@ def delete_tracking_item(user_id, tracking_id):
     redis_db.delete(key)
 
 
-def get_new_items_redis():
+def get_new_items_redis(user_id, tracking_id):
     redis_db = get_redis()
-    new_item_keys = redis_db.keys('new:item:*')
+    new_item_keys = redis_db.keys('user:{}:{}:new:item:*'.format(user_id, tracking_id))
     res = [redis_db.hgetall(key) for key in new_item_keys]
     return res
 
 
-def archive_item_redis(item_id):
+def archive_item_redis(user_id, tracking_id, item_id):
     redis_db = get_redis()
-    new_item_key = 'new:item:{}'.format(item_id)
-    old_item_key = 'old:item:{}'.format(item_id)
+    new_item_key = 'user:{}:{}:new:item:{}'.format(user_id, tracking_id, item_id)
+    old_item_key = 'user:{}:{}:old:item:{}'.format(user_id, tracking_id, item_id)
     return redis_db.renamenx(new_item_key, old_item_key)
 
 
-def update_database(data):
+def update_database(user_id, tracking_id, data):
     redis_db = get_redis()
     for _id, item in data.iteritems():
         # pprint(item)
-        key_old_item = 'old:item:{}'.format(_id)
-        key_new_item = 'new:item:{}'.format(_id)
+        key_old_item = 'user:{}:{}:old:item:{}'.format(user_id, tracking_id, _id)
+        key_new_item = 'user:{}:{}:new:item:{}'.format(user_id, tracking_id, _id)
         if item['price'] != redis_db.hget(key_old_item, 'price'):
             redis_db.delete(key_old_item)
             redis_db.hmset(key_new_item, item)
@@ -212,38 +212,49 @@ def delete_user_tracking_item(tracking_id):
     return jsonify({}), 204
 
 
-@app.route('/api/new-item/', methods=['GET'])
+@app.route('/api/tracking/<tracking_id>/item', methods=['GET'])
 @oauth_required
-def get_new_items():
-    new_items = sorted(get_new_items_redis(),
+def get_new_items(tracking_id):
+    user_id = session['user']['id']
+    new_items = sorted(get_new_items_redis(user_id, tracking_id),
                        key=lambda x: dateutil.parser.parse(x['time']),
                        reverse=True)
     return jsonify({'items': new_items})
 
 
-@app.route('/api/scrape-link', methods=['POST'])
+@app.route('/api/tracking/<tracking_id>/item/<item_id>/archive', methods=['POST'])
 @oauth_required
-def retrieve_items():
-    query_link = request.get_json().get('link')
-    if not validators.url(query_link):
-        return jsonify({"error": "Not valid link"}), 400
-    resp = requests.post(CLOJURE_APP + '/scrape', headers={"content-type": "application/json"},
-                         json={"link": query_link})
-    data = json.loads(resp.text)
-    update_database(data)
-    return jsonify({}), 204
-
-
-@app.route('/api/item/<item_id>/archive', methods=['POST'])
-@oauth_required
-def archive(item_id):
-    success = archive_item_redis(item_id)
+def archive(tracking_id, item_id):
+    user_id = session['user']['id']
+    success = archive_item_redis(user_id, tracking_id, item_id)
     if success:
         print 'archive {}'.format(item_id)
         return jsonify({}), 204
     else:
         print 'fail'
         return jsonify({'error': 'cannot archive {}'.format(item_id)}), 500
+
+
+@app.route('/api/scrape-link', methods=['POST'])
+@oauth_required
+def retrieve_items():
+    """
+
+    :json basestring link:
+    :json basestring tracking_id:
+    :return:
+    """
+    data = request.get_json()
+    query_link = data.get('link')
+    tracking_id = data.get('tracking_id')
+    user_id = session['user']['id']
+    if not validators.url(query_link):
+        return jsonify({"error": "Not valid link"}), 400
+    resp = requests.post(CLOJURE_APP + '/scrape', headers={"content-type": "application/json"},
+                         json={"link": query_link})
+    data = json.loads(resp.text)
+    update_database(user_id, tracking_id, data)
+    return jsonify({}), 204
 
 
 @app.route('/oauth2callback', methods=['GET'])
