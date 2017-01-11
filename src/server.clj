@@ -1,7 +1,7 @@
 (ns server
   (:require [compojure.core :refer :all]
-            [compojure.handler :as handler]
             [compojure.route :as route]
+            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [scrapper]))
 
@@ -19,9 +19,7 @@
   (route/resources "/")
   (route/not-found "Page not found"))
 
-;(def route-handler (handler/site app-routes))
-
 (def app
-  (-> (handler/site app-routes)
+  (-> (wrap-defaults app-routes site-defaults)
       (wrap-json-body {:keywords? true})
       (wrap-json-response)))
