@@ -31,8 +31,8 @@ angular.module('yeomanApp')
     $scope.itemList = [];
 
 
-    function getItems() {
-      $http.get('/api/new-item').then(
+    function getItems(trackingId) {
+      $http.get('/api/tracking/' + trackingId + '/item').then(
         function (result) {
           $scope.itemList = result['data']['items'] || [];
           // console.log(result);
@@ -93,6 +93,7 @@ angular.module('yeomanApp')
 
     $scope.deleteTracking = function(id) {
       function _removeTracking(id) {
+        // todo use lodash
         for (var i = 0; i < $scope.trackingList.length; i++) {
           if ($scope.trackingList[i]['id'] === id) {
             $scope.trackingList.splice(i, 1);
@@ -126,11 +127,11 @@ angular.module('yeomanApp')
       });
     };
 
-    $scope.archive = function(id) {
-      $http.post('/api/item/'+ id +'/archive').then(
+    $scope.archive = function(trackingId, itemId) {
+      $http.post('/api/tracking/' + trackingId + '/item/'+ itemId +'/archive').then(
         function(result) {
           // console.log('success archive');
-          _.remove($scope.itemList, function(n) { return n['id'] == id; });
+          _.remove($scope.itemList, function(n) { return n['id'] == itemId; });
         });
     };
 
@@ -138,8 +139,10 @@ angular.module('yeomanApp')
     $scope.scrapeLink = function(link) {
       if (!link) { return; }
       $scope.isLoading = true;
-      $http.post('/api/scrape-link', {"link": link}).then(
-        function(resp) { getItems(); },
+      // todo make sure tracking has id
+      var trackingId = $scope.selectTracking['id'];
+      $http.post('/api/scrape-link', {"link": link, 'tracking_id': trackingId}).then(
+        function(resp) { getItems(trackingId); },
         function (err) { console.error(err); alert('Cannot get items'); },
         function (progress) { console.log(progress); }
       ).finally(
@@ -165,9 +168,15 @@ angular.module('yeomanApp')
 
     $scope.$watch('user', function(val) {
       if ((val != null) && ('id' in val)) {
-        getItems();
+
       } else {
         resetItemsResult();
+      }
+    });
+
+    $scope.$watch('selectTracking', function(val) {
+      if (val && !!val['id']) {
+        getItems(val['id'])
       }
     });
 

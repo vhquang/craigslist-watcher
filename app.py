@@ -76,7 +76,7 @@ def delete_tracking_item(user_id, tracking_id):
 
 def get_new_items_redis(user_id, tracking_id):
     redis_db = get_redis()
-    new_item_keys = redis_db.keys('user:{}:{}:new:item:*').format(user_id, tracking_id)
+    new_item_keys = redis_db.keys('user:{}:{}:new:item:*'.format(user_id, tracking_id))
     res = [redis_db.hgetall(key) for key in new_item_keys]
     return res
 
@@ -212,7 +212,7 @@ def delete_user_tracking_item(tracking_id):
     return jsonify({}), 204
 
 
-@app.route('/api/tracking/<tracking_id>/item/', methods=['GET'])
+@app.route('/api/tracking/<tracking_id>/item', methods=['GET'])
 @oauth_required
 def get_new_items(tracking_id):
     user_id = session['user']['id']
