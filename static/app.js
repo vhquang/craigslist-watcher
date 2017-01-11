@@ -61,21 +61,9 @@ angular.module('yeomanApp')
     }
 
     $scope.getTrackingList = function() {
-      // $scope.trackingList = [
-      //   {
-      //     "id": "id1",
-      //     "label": "test1",
-      //     "link": "http://test1"
-      //   },
-      //   {
-      //     "id": "id2",
-      //     "label": "test2",
-      //     "link": "http://test2"
-      //   }
-      // ];
       $http.get('/api/tracking').then(
         function(resp) {
-          $scope.trackingList = resp.data || [];
+          $scope.trackingList = resp.data.items || [];
         }
       );
     };
@@ -83,13 +71,17 @@ angular.module('yeomanApp')
     $scope.saveTracking = function(tracking) {
       function _updateTrackingList(tracking) {
         var id = tracking['id'];
-        for (var i = 0; i < $scope.trackingList.length; i++) {
+        for (var i = 0; i <= $scope.trackingList.length; i++) {
+          if (i === $scope.trackingList.length) {
+            $scope.trackingList.push(tracking);
+            break;
+          }
           if ($scope.trackingList[i]['id'] === id) {
             $scope.trackingList[i] = tracking;
-          } else if (i === $scope.trackingList.length - 1) {
-            $scope.trackingList.push(tracking);
+            break;
           }
         }
+        $scope.selectTracking = tracking;
       }
 
       var id = tracking['id'] || '';
@@ -106,6 +98,7 @@ angular.module('yeomanApp')
             $scope.trackingList.splice(i, 1);
           }
         }
+        $scope.clearTrackingItem();
       }
 
       $http.delete('/api/tracking/' + id).then(
