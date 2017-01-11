@@ -161,7 +161,7 @@ angular.module('yeomanApp')
       if (search.size === 0 || words.length === 0) {
         return false;
       }
-      for (var s of search) {
+      for (var i = 0, s = null; s = search[i]; i++) {
         if ( words.indexOf(s) < 0 ) { return false; }
       }
       return true;
