@@ -27,5 +27,5 @@
       (wrap-json-response)))
 
 (defn -main [& args]
-  (let [port (get (System/getenv) "APP_PORT" "8080")]
-    (run-jetty app {:port (Integer/parseInt port)})))
+  (let [port (Integer/parseInt (get (System/getenv) "APP_PORT" "8080"))]
+    (run-jetty app {:port port})))
