@@ -275,4 +275,4 @@ def oauth2callback():
 if __name__ == '__main__':
     watch_files = ['static/app.js', 'static/main.html']
     app.run(debug=(os.environ.get('DEBUG') == 'True'), host='0.0.0.0',
-            extra_files=watch_files)
+            port=int(os.environ.get('APP_PORT', '5000')), extra_files=watch_files)
