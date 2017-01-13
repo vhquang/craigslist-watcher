@@ -32,7 +32,7 @@ angular.module('yeomanApp')
 
 
     function getItems(trackingId) {
-      $http.get('/api/tracking/' + trackingId + '/item').then(
+      $http.get('api/tracking/' + trackingId + '/item').then(
         function (result) {
           $scope.itemList = result['data']['items'] || [];
           // console.log(result);
@@ -48,7 +48,7 @@ angular.module('yeomanApp')
     }
 
     function getUserInfo() {
-      $http.get('/api/me').then(
+      $http.get('api/me').then(
         function(resp) {
           var user = resp.data || {};
           if (!!user['id']) { $scope.user = user; }
@@ -61,7 +61,7 @@ angular.module('yeomanApp')
     }
 
     $scope.getTrackingList = function() {
-      $http.get('/api/tracking').then(
+      $http.get('api/tracking').then(
         function(resp) {
           $scope.trackingList = resp.data.items || [];
         }
@@ -85,7 +85,7 @@ angular.module('yeomanApp')
       }
 
       var id = tracking['id'] || '';
-      $http.post('/api/tracking/' + id, tracking).then(
+      $http.post('api/tracking/' + id, tracking).then(
         function(resp) { _updateTrackingList(resp.data); },
         function(err) { console.error(err); }
       );
@@ -102,7 +102,7 @@ angular.module('yeomanApp')
         $scope.clearTrackingItem();
       }
 
-      $http.delete('/api/tracking/' + id).then(
+      $http.delete('api/tracking/' + id).then(
         function() { _removeTracking(id); },
         function(err) { console.error(err); alert('Cannot delete tracking link'); }
       );
@@ -115,11 +115,11 @@ angular.module('yeomanApp')
     $scope.clearTrackingItem = function() {$scope.selectTracking = {}; }
 
     $scope.login = function() {
-      location.href = '/api/login';
+      location.href = 'api/login';
     };
 
     $scope.logout = function() {
-      $http.post('/api/logout').then(
+      $http.post('api/logout').then(
         function() {},
         function() { console.error('Cannot logout'); }
       ).finally(function() { 
@@ -128,7 +128,7 @@ angular.module('yeomanApp')
     };
 
     $scope.archive = function(trackingId, itemId) {
-      $http.post('/api/tracking/' + trackingId + '/item/'+ itemId +'/archive').then(
+      $http.post('api/tracking/' + trackingId + '/item/'+ itemId +'/archive').then(
         function(result) {
           // console.log('success archive');
           _.remove($scope.itemList, function(n) { return n['id'] == itemId; });
@@ -141,7 +141,7 @@ angular.module('yeomanApp')
       $scope.isLoading = true;
       // todo make sure tracking has id
       var trackingId = $scope.selectTracking['id'];
-      $http.post('/api/scrape-link', {"link": link, 'tracking_id': trackingId}).then(
+      $http.post('api/scrape-link', {"link": link, 'tracking_id': trackingId}).then(
         function(resp) { getItems(trackingId); },
         function (err) { console.error(err); alert('Cannot get items'); },
         function (progress) { console.log(progress); }

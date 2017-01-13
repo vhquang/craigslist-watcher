@@ -175,7 +175,7 @@ def get_user_session_info():
 
 @app.route('/api/login', methods=['GET', 'POST'])
 def login():
-    return redirect(url_for('oauth2callback'))
+    return redirect(GOOGLE_CLIENT_INFO['web']['redirect_uris'][0])
 
 
 @app.route('/api/logout', methods=['GET', 'POST'])
