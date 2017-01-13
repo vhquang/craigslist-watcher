@@ -252,7 +252,7 @@ def retrieve_items():
         return jsonify({"error": "Not valid link"}), 400
     resp = requests.post(CLOJURE_APP + '/scrape', headers={"content-type": "application/json"},
                          json={"link": query_link})
-    data = json.loads(resp.text)
+    data = extract_json_data(resp)
     update_database(user_id, tracking_id, data)
     return jsonify({}), 204
 
