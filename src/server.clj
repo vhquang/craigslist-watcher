@@ -2,7 +2,7 @@
   (:gen-class)
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+            [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [ring.adapter.jetty :refer [run-jetty]]
             [scrapper]))
@@ -22,7 +22,7 @@
   (route/not-found "Page not found"))
 
 (def app
-  (-> (wrap-defaults app-routes site-defaults)
+  (-> (wrap-defaults app-routes api-defaults)
       (wrap-json-body {:keywords? true})
       (wrap-json-response)))
 
