@@ -28,6 +28,7 @@ TRACKING_ID_LENGTH = 8
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = os.environ.get('APP_SECRET_KEY') or os.urandom(24)
+BASE_ROOT = os.environ.get('BASE_ROOT', '')
 
 
 def get_redis():
@@ -269,7 +270,7 @@ def oauth2callback():
         user_info = get_google_user_info(access_token=credential['access_token'])
         user_attributes_filter = ['id', 'name', 'link']
         session['user'] = {k: v for k, v in user_info.items() if k in user_attributes_filter}
-    return redirect(url_for('index'))
+    return redirect(url_for('index') + BASE_ROOT)
 
 
 if __name__ == '__main__':
