@@ -24,7 +24,7 @@
 <div class="contain well" style="background-color: #fefefe">
   <div class="" style="margin-bottom: 10px">
     <button class="btn btn-primary-outline" style="margin-right: 5px" ng-repeat="item in trackingList"
-            ng-click="selectTrackingItem(item)">
+            ng-click="selectTrackingItem(item)" ng-class="{'btn-pressed': item.id === selectTracking.id}">
       {{item.label}}
     </button>
     <button class="btn btn-primary-outline" ng-click="clearTrackingItem()">+</button>
