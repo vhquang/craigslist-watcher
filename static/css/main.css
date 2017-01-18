@@ -134,3 +134,9 @@ span.label {
   background-color: transparent;
   border-color: #ccc;
 }
+
+.btn-pressed {
+  -webkit-box-shadow: 0 6px 4px -4px #9d9d9d;
+     -moz-box-shadow: 0 6px 4px -4px #9d9d9d;
+          box-shadow: 0 6px 4px -4px #9d9d9d;
+}

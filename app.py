@@ -28,6 +28,7 @@ TRACKING_ID_LENGTH = 8
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = os.environ.get('APP_SECRET_KEY') or os.urandom(24)
+BASE_ROOT = os.environ.get('BASE_ROOT', '')
 
 
 def get_redis():
@@ -175,7 +176,7 @@ def get_user_session_info():
 
 @app.route('/api/login', methods=['GET', 'POST'])
 def login():
-    return redirect(url_for('oauth2callback'))
+    return redirect(GOOGLE_CLIENT_INFO['web']['redirect_uris'][0])
 
 
 @app.route('/api/logout', methods=['GET', 'POST'])
@@ -252,7 +253,7 @@ def retrieve_items():
         return jsonify({"error": "Not valid link"}), 400
     resp = requests.post(CLOJURE_APP + '/scrape', headers={"content-type": "application/json"},
                          json={"link": query_link})
-    data = json.loads(resp.text)
+    data = extract_json_data(resp)
     update_database(user_id, tracking_id, data)
     return jsonify({}), 204
 
@@ -269,7 +270,7 @@ def oauth2callback():
         user_info = get_google_user_info(access_token=credential['access_token'])
         user_attributes_filter = ['id', 'name', 'link']
         session['user'] = {k: v for k, v in user_info.items() if k in user_attributes_filter}
-    return redirect(url_for('index'))
+    return redirect(url_for('index') + BASE_ROOT)
 
 
 if __name__ == '__main__':
