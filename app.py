@@ -124,7 +124,7 @@ def extract_json_data(response):
 def get_google_auth_uri():
     """
     Get the URL for Google authentication
-    
+
     :rtype: basestring
     """
     info = GOOGLE_CLIENT_INFO['web']
@@ -246,8 +246,8 @@ def retrieve_items():
     :return:
     """
     data = request.get_json()
-    query_link = data.get('link')
-    tracking_id = data.get('tracking_id')
+    query_link = data['link']
+    tracking_id = data['tracking_id']
     user_id = session['user']['id']
     if not validators.url(query_link):
         return jsonify({"error": "Not valid link"}), 400

@@ -38,11 +38,11 @@
                      (get-first-match-text row [:span.result-price])
                      (clojure.string/replace "$" ""))
             :title (get-first-match-text row [:a.hdrlnk])
-            :link (to-absolute-url
-                    (first (get-attr-values
-                             (html/select row [:a.hdrlnk]) :href)))
+            :link (first (get-attr-values
+                            (html/select row [:a.gallery]) :href))
             :time (first (get-attr-values (html/select row [:time]) :datetime))
-            :repost_id (get-in row [:attrs :data-repost-of])))
+            :repost_id (get-in row [:attrs :data-repost-of])
+            ))
 
 (defn get-posting-detail [url]
   (let [page (fetch-url url)]
@@ -61,7 +61,8 @@
         (get-posting-detail (item :link))
         (clojure.string/replace x "QR Code Link to This Post" "")
         (clojure.string/trim x)
-        (assoc item :description x)))
+        (assoc item :description x)
+  ))
 
 (defn concurrent-add-items-detail
   "Concurrently request item detail, and add their detail into the item"
@@ -91,6 +92,8 @@
       (get-row-items url)
       (map transform-row-node)
       (pmap add-item-detail)
-      ;(concurrent-add-items-detail)
-      (list-to-hashmap))
-    ))
+      ; ;(concurrent-add-items-detail)
+      (list-to-hashmap)
+      ; (hash-map :q url)
+    )
+  ))
